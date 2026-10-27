@@ -5,6 +5,7 @@ description = "Order management module with invoicing and carrier integration"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]",
+    "sqlalchemy>=2.1.6",
 ]
 
 [dependency-groups]
