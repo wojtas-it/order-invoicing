@@ -1,0 +1,33 @@
+<table class="totals">
+  <tbody>
+    <tr><th>Wartość pozycji netto</th><td class="num">{{ totals.items_net | money }}</td></tr>
+    {% if totals.discount_net > 0 %}
+    <tr><th>Rabat netto</th><td class="num">−{{ totals.discount_net | money }}</td></tr>
+    {% endif %}
+    <tr><th>Dostawa netto</th><td class="num">{{ totals.shipping_net | money }}</td></tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr><th>Stawka VAT</th><th class="num">Netto</th><th class="num">VAT</th><th class="num">Brutto</th></tr>
+  </thead>
+  <tbody>
+    {% for line in totals.vat_summary %}
+    <tr>
+      <td>{{ line.rate.value }}%</td>
+      <td class="num">{{ line.net | money }}</td>
+      <td class="num">{{ line.vat | money }}</td>
+      <td class="num">{{ line.gross | money }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>Razem</th>
+      <td class="num">{{ totals.total_net | money }}</td>
+      <td class="num">{{ totals.total_vat | money }}</td>
+      <td class="num total">{{ totals.total_gross | money }}</td>
+    </tr>
+  </tfoot>
+</table>

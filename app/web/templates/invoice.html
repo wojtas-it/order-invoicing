@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Faktura {{ invoice.number }}{% endblock %}
+{% block content %}
+<article class="invoice">
+  <div class="page-header">
+    <h1>Faktura VAT {{ invoice.number }}</h1>
+    <button class="secondary no-print" onclick="window.print()">Drukuj</button>
+  </div>
+  <p>Data wystawienia: <strong>{{ invoice.issue_date.strftime("%d.%m.%Y") }}</strong>
+    · Zamówienie <a href="/orders/{{ order.id }}">#{{ order.id }}</a></p>
+
+  <section class="cards">
+    <div class="card">
+      <h2>Sprzedawca</h2>
+      <p>{{ seller.name }}<br>{{ seller.street }}<br>{{ seller.postal_code }} {{ seller.city }}<br>NIP: {{ seller.tax_id }}</p>
+    </div>
+    <div class="card">
+      <h2>Nabywca</h2>
+      <p>{{ order.customer.name }}<br>{{ order.customer.street }}<br>{{ order.customer.postal_code }} {{ order.customer.city }}
+        {% if order.customer.tax_id %}<br>NIP: {{ order.customer.tax_id }}{% endif %}</p>
+    </div>
+  </section>
+
+  <table>
+    <thead>
+      <tr><th>Lp.</th><th>Nazwa</th><th class="num">Ilość</th><th class="num">Cena netto</th><th class="num">VAT</th><th class="num">Wartość netto</th></tr>
+    </thead>
+    <tbody>
+      {% for item in order.items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ item.name }}</td>
+        <td class="num">{{ item.quantity }}</td>
+        <td class="num">{{ item.unit_price_net | money }}</td>
+        <td class="num">{{ item.vat_rate.value }}%</td>
+        <td class="num">{{ item.net_total | money }}</td>
+      </tr>
+      {% endfor %}
+      {% if order.totals.shipping_net > 0 %}
+      <tr>
+        <td>{{ order.items | length + 1 }}</td>
+        <td>Dostawa ({{ SHIPPING_LABELS[order.shipping_method] }})</td>
+        <td class="num">1</td>
+        <td class="num">{{ order.totals.shipping_net | money }}</td>
+        <td class="num">23%</td>
+        <td class="num">{{ order.totals.shipping_net | money }}</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  {% with totals = order.totals %}{% include "_totals.html" %}{% endwith %}
+
+  <p class="to-pay">Do zapłaty: <strong>{{ invoice.total_gross | money }}</strong></p>
+</article>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Nowe zamówienie{% endblock %}
+{% block content %}
+<h1>Nowe zamówienie</h1>
+
+<form method="post" action="/orders" class="order-form">
+  <fieldset>
+    <legend>Klient</legend>
+    <div class="grid">
+      <label>Imię i nazwisko / firma
+        <input name="customer_name" value="{{ form.get('customer_name', '') }}" required>
+      </label>
+      <label>E-mail
+        <input name="customer_email" type="email" value="{{ form.get('customer_email', '') }}" required>
+      </label>
+      <label>Ulica i numer
+        <input name="customer_street" value="{{ form.get('customer_street', '') }}" required>
+      </label>
+      <label>Miasto
+        <input name="customer_city" value="{{ form.get('customer_city', '') }}" required>
+      </label>
+      <label>Kod pocztowy
+        <input name="customer_postal_code" placeholder="00-000" value="{{ form.get('customer_postal_code', '') }}" required>
+      </label>
+      <label><span>NIP <small>(opcjonalnie, dla firm)</small></span>
+        <input name="customer_tax_id" value="{{ form.get('customer_tax_id', '') }}">
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Pozycje</legend>
+    <table class="items-table">
+      <thead>
+        <tr><th>Nazwa</th><th>Ilość</th><th>Cena netto</th><th>VAT</th></tr>
+      </thead>
+      <tbody>
+        {% for row in item_rows %}
+        <tr>
+          <td><input name="item_name_{{ row }}" value="{{ form.get('item_name_' ~ row, '') }}" aria-label="Nazwa pozycji {{ row + 1 }}"></td>
+          <td><input name="item_quantity_{{ row }}" type="number" min="1" value="{{ form.get('item_quantity_' ~ row, '1') }}" aria-label="Ilość {{ row + 1 }}"></td>
+          <td><input name="item_price_{{ row }}" inputmode="decimal" placeholder="0,00" value="{{ form.get('item_price_' ~ row, '') }}" aria-label="Cena netto {{ row + 1 }}"></td>
+          <td>
+            <select name="item_vat_{{ row }}" aria-label="Stawka VAT {{ row + 1 }}">
+              {% for rate in vat_rates %}
+              <option value="{{ rate.value }}" {% if form.get('item_vat_' ~ row, '23') == rate.value | string %}selected{% endif %}>{{ rate.value }}%</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">Puste wiersze są pomijane.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Dostawa i rabat</legend>
+    <div class="grid">
+      <div>
+        {% for method, label, price in shipping_options %}
+        <label class="radio">
+          <input type="radio" name="shipping_method" value="{{ method.value }}"
+            {% if form.get('shipping_method', 'courier') == method.value %}checked{% endif %}>
+          {{ label }} ({{ price | money }})
+        </label>
+        {% endfor %}
+        <p class="hint">Darmowa dostawa od 200,00 zł brutto.</p>
+      </div>
+      <label>Kod rabatowy
+        <input name="discount_code" value="{{ form.get('discount_code', '') }}" placeholder="np. WELCOME10">
+      </label>
+    </div>
+  </fieldset>
+
+  <button type="submit">Złóż zamówienie</button>
+</form>
+{% endblock %}

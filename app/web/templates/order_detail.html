@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Zamówienie #{{ order.id }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Zamówienie #{{ order.id }}</h1>
+  <span class="badge badge-{{ order.status.value }}">{{ STATUS_LABELS[order.status] }}</span>
+</div>
+
+<section class="cards">
+  <div class="card">
+    <h2>Klient</h2>
+    <p>{{ order.customer.name }}<br>
+      {{ order.customer.street }}<br>
+      {{ order.customer.postal_code }} {{ order.customer.city }}<br>
+      {{ order.customer.email }}
+      {% if order.customer.tax_id %}<br>NIP: {{ order.customer.tax_id }}{% endif %}</p>
+  </div>
+  <div class="card">
+    <h2>Dostawa</h2>
+    <p>{{ SHIPPING_LABELS[order.shipping_method] }}<br>
+      {% if order.tracking_number %}Nr przesyłki: <strong>{{ order.tracking_number }}</strong>{% else %}Nie nadano{% endif %}</p>
+    {% if order.discount_code %}<p>Kod rabatowy: <strong>{{ order.discount_code }}</strong></p>{% endif %}
+    <p class="hint">Złożono {{ order.created_at.strftime("%d.%m.%Y %H:%M") }}</p>
+  </div>
+</section>
+
+<h2>Pozycje</h2>
+<table>
+  <thead>
+    <tr><th>Nazwa</th><th class="num">Ilość</th><th class="num">Cena netto</th><th class="num">VAT</th><th class="num">Wartość netto</th></tr>
+  </thead>
+  <tbody>
+    {% for item in order.items %}
+    <tr>
+      <td>{{ item.name }}</td>
+      <td class="num">{{ item.quantity }}</td>
+      <td class="num">{{ item.unit_price_net | money }}</td>
+      <td class="num">{{ item.vat_rate.value }}%</td>
+      <td class="num">{{ item.net_total | money }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Podsumowanie</h2>
+{% with totals = order.totals %}{% include "_totals.html" %}{% endwith %}
+
+<h2>Akcje</h2>
+<div class="actions">
+  {% if order.can_change_to(OrderStatus.PAID) %}
+  <form method="post" action="/orders/{{ order.id }}/actions/pay"><button>Oznacz jako opłacone</button></form>
+  {% endif %}
+  {% if order.can_change_to(OrderStatus.SHIPPED) %}
+  <form method="post" action="/orders/{{ order.id }}/actions/ship"><button>Nadaj przesyłkę</button></form>
+  {% endif %}
+  {% if order.can_change_to(OrderStatus.DELIVERED) %}
+  <form method="post" action="/orders/{{ order.id }}/actions/deliver"><button>Oznacz jako dostarczone</button></form>
+  {% endif %}
+  {% if invoice %}
+  <a class="button secondary" href="/invoices/{{ invoice.id }}">Faktura {{ invoice.number }}</a>
+  {% elif order.can_be_invoiced %}
+  <form method="post" action="/orders/{{ order.id }}/invoice"><button>Wystaw fakturę</button></form>
+  {% endif %}
+  {% if order.can_change_to(OrderStatus.CANCELLED) %}
+  <form method="post" action="/orders/{{ order.id }}/actions/cancel"><button class="danger">Anuluj zamówienie</button></form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Zamówienia</h1>
+  <a class="button" href="/orders/new">Nowe zamówienie</a>
+</div>
+
+{% if orders %}
+<table>
+  <thead>
+    <tr><th>Nr</th><th>Data</th><th>Klient</th><th>Status</th><th class="num">Wartość brutto</th></tr>
+  </thead>
+  <tbody>
+    {% for order in orders %}
+    <tr>
+      <td><a href="/orders/{{ order.id }}">#{{ order.id }}</a></td>
+      <td>{{ order.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
+      <td>{{ order.customer.name }}</td>
+      <td><span class="badge badge-{{ order.status.value }}">{{ STATUS_LABELS[order.status] }}</span></td>
+      <td class="num">{{ order.totals.total_gross | money }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Brak zamówień. <a href="/orders/new">Utwórz pierwsze zamówienie</a>.</p>
+{% endif %}
+{% endblock %}
