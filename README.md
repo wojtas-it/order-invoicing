@@ -6,7 +6,7 @@ Testowanie i Jakość Oprogramowania II
 
 ## Autor
 
-_TODO: imię i nazwisko, nr indeksu, grupa_
+Filip Wojtasiński (nr indeksu: 37747, grupa: PT1)
 
 ## Temat projektu
 
