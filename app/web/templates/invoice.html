@@ -39,7 +39,7 @@
       {% if order.totals.shipping_net > 0 %}
       <tr>
         <td>{{ order.items | length + 1 }}</td>
-        <td>Dostawa ({{ SHIPPING_LABELS[order.shipping_method] }})</td>
+        <td>Dostawa ({{ order.shipping_method.label }})</td>
         <td class="num">1</td>
         <td class="num">{{ order.totals.shipping_net | money }}</td>
         <td class="num">23%</td>

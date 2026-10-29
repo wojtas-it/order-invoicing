@@ -31,7 +31,7 @@ class ConflictError(DomainError):
 
 class InvalidStatusTransitionError(ConflictError):
     def __init__(self, current: str, target: str) -> None:
-        super().__init__(f"Nie można zmienić statusu zamówienia z '{current}' na '{target}'")
+        super().__init__(f"Nie można zmienić statusu zamówienia z „{current}” na „{target}”")
 
 
 class InvoiceNotAllowedError(ConflictError):

@@ -9,6 +9,15 @@ class ShippingMethod(StrEnum):
     COURIER = "courier"
     PARCEL_LOCKER = "parcel_locker"
 
+    @property
+    def label(self) -> str:
+        return SHIPPING_LABELS[self]
+
+
+SHIPPING_LABELS = {
+    ShippingMethod.COURIER: "Kurier",
+    ShippingMethod.PARCEL_LOCKER: "Paczkomat",
+}
 
 DEFAULT_SHIPPING_PRICES_NET: Mapping[ShippingMethod, Decimal] = {
     ShippingMethod.COURIER: Decimal("13.00"),

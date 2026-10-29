@@ -16,6 +16,18 @@ class OrderStatus(StrEnum):
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
 
+    @property
+    def label(self) -> str:
+        return STATUS_LABELS[self]
+
+
+STATUS_LABELS = {
+    OrderStatus.NEW: "Nowe",
+    OrderStatus.PAID: "Opłacone",
+    OrderStatus.SHIPPED: "Wysłane",
+    OrderStatus.DELIVERED: "Dostarczone",
+    OrderStatus.CANCELLED: "Anulowane",
+}
 
 ALLOWED_TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
     OrderStatus.NEW: frozenset({OrderStatus.PAID, OrderStatus.CANCELLED}),
@@ -52,7 +64,7 @@ class Order:
 
     def ensure_can_change_to(self, target: OrderStatus) -> None:
         if not self.can_change_to(target):
-            raise InvalidStatusTransitionError(self.status, target)
+            raise InvalidStatusTransitionError(self.status.label, target.label)
 
     def mark_paid(self) -> None:
         self._change_to(OrderStatus.PAID)

@@ -16,7 +16,7 @@
       <td><a href="/orders/{{ order.id }}">#{{ order.id }}</a></td>
       <td>{{ order.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
       <td>{{ order.customer.name }}</td>
-      <td><span class="badge badge-{{ order.status.value }}">{{ STATUS_LABELS[order.status] }}</span></td>
+      <td><span class="badge badge-{{ order.status.value }}">{{ order.status.label }}</span></td>
       <td class="num">{{ order.totals.total_gross | money }}</td>
     </tr>
     {% endfor %}

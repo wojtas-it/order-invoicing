@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Zamówienie #{{ order.id }}</h1>
-  <span class="badge badge-{{ order.status.value }}">{{ STATUS_LABELS[order.status] }}</span>
+  <span class="badge badge-{{ order.status.value }}">{{ order.status.label }}</span>
 </div>
 
 <section class="cards">
@@ -17,7 +17,7 @@
   </div>
   <div class="card">
     <h2>Dostawa</h2>
-    <p>{{ SHIPPING_LABELS[order.shipping_method] }}<br>
+    <p>{{ order.shipping_method.label }}<br>
       {% if order.tracking_number %}Nr przesyłki: <strong>{{ order.tracking_number }}</strong>{% else %}Nie nadano{% endif %}</p>
     {% if order.discount_code %}<p>Kod rabatowy: <strong>{{ order.discount_code }}</strong></p>{% endif %}
     <p class="hint">Złożono {{ order.created_at.strftime("%d.%m.%Y %H:%M") }}</p>

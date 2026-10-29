@@ -12,23 +12,14 @@ from app.domain.order import Order, OrderStatus
 from app.domain.shipping import ShippingMethod
 from app.domain.vat import VatRate
 from app.services.order_service import OrderService
-from app.web.formatting import (
-    SHIPPING_LABELS,
-    STATUS_LABELS,
-    format_money,
-    shipping_price_gross,
-)
+from app.web.formatting import format_money, shipping_price_gross
 from app.web.forms import ITEM_ROWS, parse_order_form
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 templates.env.filters["money"] = format_money
-templates.env.globals.update(
-    OrderStatus=OrderStatus,
-    STATUS_LABELS=STATUS_LABELS,
-    SHIPPING_LABELS=SHIPPING_LABELS,
-)
+templates.env.globals["OrderStatus"] = OrderStatus
 
 ORDER_ACTIONS: dict[str, Callable[[OrderService, int], Order]] = {
     "pay": OrderService.pay,
@@ -130,10 +121,7 @@ def _render_order_form(
         "error": error,
         "item_rows": range(ITEM_ROWS),
         "vat_rates": list(VatRate),
-        "shipping_options": [
-            (method, SHIPPING_LABELS[method], shipping_price_gross(method))
-            for method in ShippingMethod
-        ],
+        "shipping_options": [(method, shipping_price_gross(method)) for method in ShippingMethod],
     }
     return templates.TemplateResponse(request, "order_form.html", context, status_code=status_code)
 

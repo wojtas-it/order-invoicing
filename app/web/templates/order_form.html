@@ -58,11 +58,11 @@
     <legend>Dostawa i rabat</legend>
     <div class="grid">
       <div>
-        {% for method, label, price in shipping_options %}
+        {% for method, price in shipping_options %}
         <label class="radio">
           <input type="radio" name="shipping_method" value="{{ method.value }}"
             {% if form.get('shipping_method', 'courier') == method.value %}checked{% endif %}>
-          {{ label }} ({{ price | money }})
+          {{ method.label }} ({{ price | money }})
         </label>
         {% endfor %}
         <p class="hint">Darmowa dostawa od 200,00 zł brutto.</p>
