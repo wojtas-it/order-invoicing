@@ -1,10 +1,9 @@
 from decimal import Decimal
 
-from app.domain.money import round_money
 from app.domain.shipping import DEFAULT_SHIPPING_PRICES_NET, ShippingMethod
 from app.domain.vat import VatRate
 
-NON_BREAKING_SPACE = " "
+NON_BREAKING_SPACE = "\u00a0"
 
 
 def format_money(amount: Decimal) -> str:
@@ -15,4 +14,4 @@ def format_money(amount: Decimal) -> str:
 
 def shipping_price_gross(method: ShippingMethod) -> Decimal:
     net = DEFAULT_SHIPPING_PRICES_NET[method]
-    return net + round_money(net * VatRate.STANDARD.fraction)
+    return net + VatRate.STANDARD.vat_for(net)

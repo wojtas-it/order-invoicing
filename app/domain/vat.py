@@ -1,6 +1,8 @@
 from decimal import Decimal
 from enum import IntEnum
 
+from app.domain.money import round_money
+
 
 class VatRate(IntEnum):
     STANDARD = 23
@@ -11,3 +13,6 @@ class VatRate(IntEnum):
     @property
     def fraction(self) -> Decimal:
         return Decimal(self.value) / Decimal(100)
+
+    def vat_for(self, net: Decimal) -> Decimal:
+        return round_money(net * self.fraction)

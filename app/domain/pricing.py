@@ -63,20 +63,16 @@ class PriceCalculator:
         discount_net = discount.discount_for(items_net)
         net_by_rate = _distribute_discount(net_by_rate, discount_net)
 
-        items_gross = sum((net + _vat_for(rate, net) for rate, net in net_by_rate.items()), ZERO)
+        items_gross = sum((net + rate.vat_for(net) for rate, net in net_by_rate.items()), ZERO)
         shipping_net = self._shipping_policy.cost_for(shipping_method, items_gross)
         if shipping_net > 0:
             net_by_rate[SHIPPING_VAT_RATE] = net_by_rate.get(SHIPPING_VAT_RATE, ZERO) + shipping_net
 
         vat_summary = tuple(
-            VatSummaryLine(rate=rate, net=net, vat=_vat_for(rate, net))
+            VatSummaryLine(rate=rate, net=net, vat=rate.vat_for(net))
             for rate, net in sorted(net_by_rate.items(), reverse=True)
         )
         return OrderTotals(items_net, discount_net, shipping_net, vat_summary)
-
-
-def _vat_for(rate: VatRate, net: Decimal) -> Decimal:
-    return round_money(net * rate.fraction)
 
 
 def _sum_net_by_rate(items: Sequence[OrderItem]) -> dict[VatRate, Decimal]:
