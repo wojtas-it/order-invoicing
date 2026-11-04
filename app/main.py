@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import invoices, orders
+from app.api import invoices, orders, products
 from app.api.errors import register_error_handlers
 from app.config import Settings
 from app.infrastructure.carrier import build_carrier_client
@@ -13,6 +13,13 @@ from app.services.ports import CarrierClient, Clock
 from app.web import routes as web
 
 STATIC_DIR = Path(__file__).parent / "web" / "static"
+
+API_TAGS = [
+    {"name": "orders", "description": "Zamówienia, zmiany statusów i wystawianie faktur"},
+    {"name": "products", "description": "Katalog produktów"},
+    {"name": "invoices", "description": "Wystawione faktury VAT"},
+    {"name": "health", "description": "Sprawdzenie, czy aplikacja działa"},
+]
 
 
 def create_app(
@@ -25,6 +32,7 @@ def create_app(
         title="Order Invoicing",
         version="0.1.0",
         description="Obsługa zamówień z fakturowaniem i integracją z przewoźnikiem.",
+        openapi_tags=API_TAGS,
     )
     app.state.settings = settings
     app.state.session_factory = create_session_factory(settings.database_url)
@@ -32,6 +40,7 @@ def create_app(
     app.state.clock = clock or SystemClock()
 
     app.include_router(orders.router)
+    app.include_router(products.router)
     app.include_router(invoices.router)
     app.include_router(web.router)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

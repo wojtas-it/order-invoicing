@@ -1,25 +1,13 @@
-from typing import Any
-
 from fastapi import APIRouter
 
 from app.api.dependencies import InvoiceServiceDep, OrderServiceDep
-from app.api.schemas import ErrorResponse, InvoiceResponse, OrderCreateRequest, OrderResponse
+from app.api.responses import CARRIER_UNAVAILABLE, INVALID_DATA, NOT_FOUND, STATUS_CONFLICT
+from app.api.schemas import InvoiceResponse, OrderCreateRequest, OrderResponse
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
-NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"model": ErrorResponse}}
-STATUS_CONFLICT: dict[int | str, dict[str, Any]] = {
-    404: {"model": ErrorResponse},
-    409: {"model": ErrorResponse, "description": "Niedozwolona zmiana statusu"},
-}
 
-
-@router.post(
-    "",
-    status_code=201,
-    summary="Złóż zamówienie",
-    responses={422: {"model": ErrorResponse}},
-)
+@router.post("", status_code=201, summary="Złóż zamówienie", responses=INVALID_DATA)
 def create_order(payload: OrderCreateRequest, service: OrderServiceDep) -> OrderResponse:
     return OrderResponse.from_domain(service.place_order(payload.to_command()))
 
@@ -42,10 +30,7 @@ def pay_order(order_id: int, service: OrderServiceDep) -> OrderResponse:
 @router.post(
     "/{order_id}/ship",
     summary="Nadaj przesyłkę u przewoźnika",
-    responses={
-        **STATUS_CONFLICT,
-        502: {"model": ErrorResponse, "description": "Przewoźnik niedostępny"},
-    },
+    responses={**STATUS_CONFLICT, **CARRIER_UNAVAILABLE},
 )
 def ship_order(order_id: int, service: OrderServiceDep) -> OrderResponse:
     return OrderResponse.from_domain(service.ship(order_id))

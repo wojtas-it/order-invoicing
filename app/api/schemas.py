@@ -9,6 +9,7 @@ from app.domain.invoice import Invoice
 from app.domain.order import Order, OrderStatus
 from app.domain.order_item import OrderItem
 from app.domain.pricing import OrderTotals, VatSummaryLine
+from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
 from app.domain.vat import VatRate
 from app.services.order_service import PlaceOrderCommand
@@ -16,6 +17,43 @@ from app.services.order_service import PlaceOrderCommand
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+class ProductRequest(BaseModel):
+    name: str = Field(examples=["Mysz bezprzewodowa"])
+    unit_price_net: Decimal = Field(examples=["89.00"])
+    vat_rate: VatRate = Field(examples=[23])
+    active: bool = True
+
+    def to_domain(self, product_id: int | None = None) -> Product:
+        return Product(
+            id=product_id,
+            name=self.name,
+            unit_price_net=self.unit_price_net,
+            vat_rate=self.vat_rate,
+            active=self.active,
+        )
+
+
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    unit_price_net: Decimal
+    unit_price_gross: Decimal
+    vat_rate: VatRate
+    active: bool
+
+    @classmethod
+    def from_domain(cls, product: Product) -> Self:
+        assert product.id is not None
+        return cls(
+            id=product.id,
+            name=product.name,
+            unit_price_net=product.unit_price_net,
+            unit_price_gross=product.unit_price_gross,
+            vat_rate=product.vat_rate,
+            active=product.active,
+        )
 
 
 class CustomerPayload(BaseModel):
