@@ -7,14 +7,52 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.domain.customer import Customer
-from app.domain.errors import OrderNotFoundError
+from app.domain.errors import OrderNotFoundError, ProductNotFoundError
 from app.domain.invoice import Invoice
 from app.domain.order import Order, OrderStatus
 from app.domain.order_item import OrderItem
 from app.domain.pricing import OrderTotals, VatSummaryLine
+from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
 from app.domain.vat import VatRate
-from app.infrastructure.orm import InvoiceRecord, OrderItemRecord, OrderRecord
+from app.infrastructure.orm import InvoiceRecord, OrderItemRecord, OrderRecord, ProductRecord
+
+
+class SqlProductRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, product: Product) -> Product:
+        record = ProductRecord(
+            name=product.name,
+            unit_price_net=str(product.unit_price_net),
+            vat_rate=product.vat_rate.value,
+            active=product.active,
+        )
+        self._session.add(record)
+        self._session.commit()
+        product.id = record.id
+        return product
+
+    def get(self, product_id: int) -> Product | None:
+        record = self._session.get(ProductRecord, product_id)
+        return _product_to_domain(record) if record else None
+
+    def list_all(self, active_only: bool = False) -> list[Product]:
+        query = select(ProductRecord).order_by(ProductRecord.name)
+        if active_only:
+            query = query.where(ProductRecord.active.is_(True))
+        return [_product_to_domain(record) for record in self._session.scalars(query)]
+
+    def update(self, product: Product) -> None:
+        record = self._session.get(ProductRecord, product.id)
+        if record is None:
+            raise ProductNotFoundError(product.id)
+        record.name = product.name
+        record.unit_price_net = str(product.unit_price_net)
+        record.vat_rate = product.vat_rate.value
+        record.active = product.active
+        self._session.commit()
 
 
 class SqlOrderRepository:
@@ -84,6 +122,16 @@ class SqlInvoiceRepository:
             InvoiceRecord.issue_date < next_month_start,
         )
         return self._session.scalar(query) or 0
+
+
+def _product_to_domain(record: ProductRecord) -> Product:
+    return Product(
+        id=record.id,
+        name=record.name,
+        unit_price_net=Decimal(record.unit_price_net),
+        vat_rate=VatRate(record.vat_rate),
+        active=record.active,
+    )
 
 
 def _order_to_record(order: Order) -> OrderRecord:

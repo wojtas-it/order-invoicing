@@ -20,6 +20,11 @@ class OrderNotFoundError(NotFoundError):
         super().__init__(f"Nie znaleziono zamówienia o id {order_id}")
 
 
+class ProductNotFoundError(NotFoundError):
+    def __init__(self, product_id: int | None) -> None:
+        super().__init__(f"Nie znaleziono produktu o id {product_id}")
+
+
 class InvoiceNotFoundError(NotFoundError):
     def __init__(self, invoice_id: int) -> None:
         super().__init__(f"Nie znaleziono faktury o id {invoice_id}")

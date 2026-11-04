@@ -11,6 +11,16 @@ class Base(DeclarativeBase):
     pass
 
 
+class ProductRecord(Base):
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    unit_price_net: Mapped[str] = mapped_column(MONEY)
+    vat_rate: Mapped[int]
+    active: Mapped[bool] = mapped_column(default=True)
+
+
 class OrderItemRecord(Base):
     __tablename__ = "order_items"
 

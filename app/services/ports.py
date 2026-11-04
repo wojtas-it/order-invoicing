@@ -4,7 +4,18 @@ from typing import Protocol
 
 from app.domain.invoice import Invoice
 from app.domain.order import Order
+from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
+
+
+class ProductRepository(Protocol):
+    def add(self, product: Product) -> Product: ...
+
+    def get(self, product_id: int) -> Product | None: ...
+
+    def list_all(self, active_only: bool = False) -> list[Product]: ...
+
+    def update(self, product: Product) -> None: ...
 
 
 class OrderRepository(Protocol):
