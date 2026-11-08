@@ -10,7 +10,7 @@ from app.infrastructure.carrier import build_carrier_client
 from app.infrastructure.clock import SystemClock
 from app.infrastructure.database import create_session_factory
 from app.services.ports import CarrierClient, Clock
-from app.web import routes as web
+from app.web import invoice_pages, order_pages, product_pages
 
 STATIC_DIR = Path(__file__).parent / "web" / "static"
 
@@ -42,7 +42,9 @@ def create_app(
     app.include_router(orders.router)
     app.include_router(products.router)
     app.include_router(invoices.router)
-    app.include_router(web.router)
+    app.include_router(order_pages.router)
+    app.include_router(product_pages.router)
+    app.include_router(invoice_pages.router)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     register_error_handlers(app)
 

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{% if product_id %}Edycja produktu{% else %}Nowy produkt{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if product_id %}Edycja produktu{% else %}Nowy produkt{% endif %}</h1>
+
+<form method="post" action="{% if product_id %}/products/{{ product_id }}{% else %}/products{% endif %}">
+  <fieldset>
+    <legend>Dane produktu</legend>
+    <div class="grid">
+      <label>Nazwa
+        <input name="name" value="{{ form.get('name', '') }}" required>
+      </label>
+      <label>Cena netto (zł)
+        <input name="unit_price_net" inputmode="decimal" placeholder="0,00" value="{{ form.get('unit_price_net', '') }}" required>
+      </label>
+      <label>Stawka VAT
+        <select name="vat_rate">
+          {% for rate in vat_rates %}
+          <option value="{{ rate.value }}" {% if form.get('vat_rate', '23') == rate.value | string %}selected{% endif %}>{{ rate.value }}%</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <label class="radio">
+      <input type="checkbox" name="active" {% if form.get('active') %}checked{% endif %}>
+      Aktywny (dostępny w nowych zamówieniach)
+    </label>
+  </fieldset>
+
+  <div class="actions">
+    <button type="submit">Zapisz</button>
+    <a class="button secondary" href="/products">Anuluj</a>
+  </div>
+</form>
+{% endblock %}

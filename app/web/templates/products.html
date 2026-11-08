@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Produkty{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Produkty</h1>
+  <a class="button" href="/products/new">Dodaj produkt</a>
+</div>
+
+{% if products %}
+<table>
+  <thead>
+    <tr><th>Nazwa</th><th class="num">Cena netto</th><th class="num">VAT</th><th class="num">Cena brutto</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for product in products %}
+    <tr>
+      <td>{{ product.name }}</td>
+      <td class="num">{{ product.unit_price_net | money }}</td>
+      <td class="num">{{ product.vat_rate.value }}%</td>
+      <td class="num">{{ product.unit_price_gross | money }}</td>
+      <td>{% if product.active %}<span class="badge badge-paid">Aktywny</span>{% else %}<span class="badge badge-cancelled">Wycofany</span>{% endif %}</td>
+      <td class="num"><a href="/products/{{ product.id }}/edit">Edytuj</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Katalog jest pusty. <a href="/products/new">Dodaj pierwszy produkt</a>.</p>
+{% endif %}
+{% endblock %}
