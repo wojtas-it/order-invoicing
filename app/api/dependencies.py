@@ -35,6 +35,7 @@ def get_product_service(session: SessionDep) -> ProductService:
 def get_order_service(request: Request, session: SessionDep) -> OrderService:
     return OrderService(
         orders=SqlOrderRepository(session),
+        products=SqlProductRepository(session),
         calculator=PriceCalculator(ShippingCostPolicy()),
         discounts=DiscountCatalog(),
         carrier=request.app.state.carrier,

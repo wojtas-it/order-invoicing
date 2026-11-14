@@ -4,7 +4,7 @@ from typing import Any
 
 from app.domain.customer import Customer
 from app.domain.errors import ValidationError
-from app.domain.order_item import OrderItem
+from app.domain.order_line import OrderLine
 from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
 from app.domain.vat import VatRate
@@ -22,12 +22,14 @@ def parse_order_form(form: Mapping[str, Any]) -> PlaceOrderCommand:
         postal_code=_text(form, "customer_postal_code"),
         tax_id=_text(form, "customer_tax_id") or None,
     )
-    items = [_parse_item(form, row) for row in range(ITEM_ROWS) if _text(form, f"item_name_{row}")]
-    if not items:
+    lines = [
+        _parse_line(form, row) for row in range(ITEM_ROWS) if _text(form, f"item_product_{row}")
+    ]
+    if not lines:
         raise ValidationError("Dodaj co najmniej jedną pozycję zamówienia")
     return PlaceOrderCommand(
         customer=customer,
-        items=items,
+        lines=lines,
         shipping_method=_parse_shipping_method(form),
         discount_code=_text(form, "discount_code") or None,
     )
@@ -48,19 +50,13 @@ def parse_product_form(form: Mapping[str, Any], product_id: int | None = None) -
     )
 
 
-def _parse_item(form: Mapping[str, Any], row: int) -> OrderItem:
+def _parse_line(form: Mapping[str, Any], row: int) -> OrderLine:
     try:
+        product_id = int(_text(form, f"item_product_{row}"))
         quantity = int(_text(form, f"item_quantity_{row}"))
-        unit_price_net = _parse_decimal(_text(form, f"item_price_{row}"))
-        vat_rate = VatRate(int(_text(form, f"item_vat_{row}")))
-    except (ValueError, InvalidOperation) as error:
+    except ValueError as error:
         raise ValidationError(f"Niepoprawne dane w pozycji nr {row + 1}") from error
-    return OrderItem(
-        name=_text(form, f"item_name_{row}"),
-        quantity=quantity,
-        unit_price_net=unit_price_net,
-        vat_rate=vat_rate,
-    )
+    return OrderLine(product_id=product_id, quantity=quantity)
 
 
 def _parse_shipping_method(form: Mapping[str, Any]) -> ShippingMethod:

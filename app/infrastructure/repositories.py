@@ -151,6 +151,7 @@ def _order_to_record(order: Order) -> OrderRecord:
         totals_json=_totals_to_json(order.totals),
         items=[
             OrderItemRecord(
+                product_id=item.product_id,
                 name=item.name,
                 quantity=item.quantity,
                 unit_price_net=str(item.unit_price_net),
@@ -174,6 +175,7 @@ def _order_to_domain(record: OrderRecord) -> Order:
         ),
         items=[
             OrderItem(
+                product_id=item.product_id,
                 name=item.name,
                 quantity=item.quantity,
                 unit_price_net=Decimal(item.unit_price_net),

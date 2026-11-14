@@ -99,9 +99,7 @@ label.radio { flex-direction: row; align-items: center; gap: 8px; }
 input, select { font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); width: 100%; }
 input[type="radio"] { width: auto; }
 .items-table td { padding: 4px; }
-.items-table td:nth-child(2) { width: 90px; }
-.items-table td:nth-child(3) { width: 130px; }
-.items-table td:nth-child(4) { width: 90px; }
+.items-table td:nth-child(2) { width: 110px; }
 
 .hint, .empty { color: var(--muted); font-size: 0.9rem; }
 .to-pay { font-size: 1.2rem; text-align: right; }

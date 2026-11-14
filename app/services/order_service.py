@@ -3,18 +3,26 @@ from dataclasses import dataclass
 
 from app.domain.customer import Customer
 from app.domain.discounts import DiscountCatalog
-from app.domain.errors import OrderNotFoundError
+from app.domain.errors import OrderNotFoundError, ProductUnavailableError, UnknownProductError
 from app.domain.order import Order, OrderStatus
 from app.domain.order_item import OrderItem
+from app.domain.order_line import OrderLine, merge_order_lines
 from app.domain.pricing import PriceCalculator
+from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
-from app.services.ports import CarrierClient, Clock, OrderRepository, ShipmentRequest
+from app.services.ports import (
+    CarrierClient,
+    Clock,
+    OrderRepository,
+    ProductRepository,
+    ShipmentRequest,
+)
 
 
 @dataclass(frozen=True)
 class PlaceOrderCommand:
     customer: Customer
-    items: Sequence[OrderItem]
+    lines: Sequence[OrderLine]
     shipping_method: ShippingMethod
     discount_code: str | None = None
 
@@ -23,23 +31,26 @@ class OrderService:
     def __init__(
         self,
         orders: OrderRepository,
+        products: ProductRepository,
         calculator: PriceCalculator,
         discounts: DiscountCatalog,
         carrier: CarrierClient,
         clock: Clock,
     ) -> None:
         self._orders = orders
+        self._products = products
         self._calculator = calculator
         self._discounts = discounts
         self._carrier = carrier
         self._clock = clock
 
     def place_order(self, command: PlaceOrderCommand) -> Order:
+        items = self._items_from_catalog(command.lines)
         discount = self._discounts.resolve(command.discount_code)
-        totals = self._calculator.calculate(command.items, discount, command.shipping_method)
+        totals = self._calculator.calculate(items, discount, command.shipping_method)
         order = Order(
             customer=command.customer,
-            items=list(command.items),
+            items=items,
             shipping_method=command.shipping_method,
             totals=totals,
             created_at=self._clock.now(),
@@ -72,6 +83,20 @@ class OrderService:
         order.mark_shipped(tracking_number)
         self._orders.update(order)
         return order
+
+    def _items_from_catalog(self, lines: Sequence[OrderLine]) -> list[OrderItem]:
+        return [
+            OrderItem.from_product(self._available_product(product_id), quantity)
+            for product_id, quantity in merge_order_lines(lines).items()
+        ]
+
+    def _available_product(self, product_id: int) -> Product:
+        product = self._products.get(product_id)
+        if product is None:
+            raise UnknownProductError(product_id)
+        if not product.active:
+            raise ProductUnavailableError(product.name)
+        return product
 
     def _apply(self, order_id: int, action: Callable[[Order], None]) -> Order:
         order = self.get_order(order_id)

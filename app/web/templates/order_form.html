@@ -30,28 +30,31 @@
 
   <fieldset>
     <legend>Pozycje</legend>
+    {% if products %}
     <table class="items-table">
       <thead>
-        <tr><th>Nazwa</th><th>Ilość</th><th>Cena netto</th><th>VAT</th></tr>
+        <tr><th>Produkt</th><th>Ilość</th></tr>
       </thead>
       <tbody>
         {% for row in item_rows %}
         <tr>
-          <td><input name="item_name_{{ row }}" value="{{ form.get('item_name_' ~ row, '') }}" aria-label="Nazwa pozycji {{ row + 1 }}"></td>
-          <td><input name="item_quantity_{{ row }}" type="number" min="1" value="{{ form.get('item_quantity_' ~ row, '1') }}" aria-label="Ilość {{ row + 1 }}"></td>
-          <td><input name="item_price_{{ row }}" inputmode="decimal" placeholder="0,00" value="{{ form.get('item_price_' ~ row, '') }}" aria-label="Cena netto {{ row + 1 }}"></td>
           <td>
-            <select name="item_vat_{{ row }}" aria-label="Stawka VAT {{ row + 1 }}">
-              {% for rate in vat_rates %}
-              <option value="{{ rate.value }}" {% if form.get('item_vat_' ~ row, '23') == rate.value | string %}selected{% endif %}>{{ rate.value }}%</option>
+            <select name="item_product_{{ row }}" aria-label="Produkt {{ row + 1 }}">
+              <option value="">— wybierz produkt —</option>
+              {% for product in products %}
+              <option value="{{ product.id }}" {% if form.get('item_product_' ~ row, '') == product.id | string %}selected{% endif %}>{{ product.name }} · {{ product.unit_price_net | money }} netto · VAT {{ product.vat_rate.value }}%</option>
               {% endfor %}
             </select>
           </td>
+          <td><input name="item_quantity_{{ row }}" type="number" min="1" max="999" value="{{ form.get('item_quantity_' ~ row, '1') }}" aria-label="Ilość {{ row + 1 }}"></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    <p class="hint">Puste wiersze są pomijane.</p>
+    <p class="hint">Puste wiersze są pomijane. Ten sam produkt wybrany kilka razy zostanie zsumowany.</p>
+    {% else %}
+    <p class="empty">Brak aktywnych produktów. <a href="/products/new">Dodaj produkt do katalogu</a>.</p>
+    {% endif %}
   </fieldset>
 
   <fieldset>

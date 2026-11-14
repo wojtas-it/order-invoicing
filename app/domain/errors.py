@@ -11,6 +11,16 @@ class UnknownDiscountCodeError(ValidationError):
         super().__init__(f"Nieznany kod rabatowy: {code}")
 
 
+class UnknownProductError(ValidationError):
+    def __init__(self, product_id: int) -> None:
+        super().__init__(f"Produkt o id {product_id} nie istnieje")
+
+
+class ProductUnavailableError(ValidationError):
+    def __init__(self, product_name: str) -> None:
+        super().__init__(f"Produkt „{product_name}” jest wycofany ze sprzedaży")
+
+
 class NotFoundError(DomainError):
     pass
 

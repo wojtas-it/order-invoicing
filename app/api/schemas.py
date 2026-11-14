@@ -8,6 +8,7 @@ from app.domain.customer import Customer
 from app.domain.invoice import Invoice
 from app.domain.order import Order, OrderStatus
 from app.domain.order_item import OrderItem
+from app.domain.order_line import OrderLine
 from app.domain.pricing import OrderTotals, VatSummaryLine
 from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
@@ -86,40 +87,44 @@ class CustomerPayload(BaseModel):
         )
 
 
-class OrderItemPayload(BaseModel):
-    name: str = Field(examples=["Kubek ceramiczny"])
+class OrderLinePayload(BaseModel):
+    product_id: int = Field(examples=[1])
     quantity: int = Field(examples=[2])
-    unit_price_net: Decimal = Field(examples=["24.39"])
-    vat_rate: VatRate = Field(examples=[23])
 
-    def to_domain(self) -> OrderItem:
-        return OrderItem(
-            name=self.name,
-            quantity=self.quantity,
-            unit_price_net=self.unit_price_net,
-            vat_rate=self.vat_rate,
-        )
+    def to_domain(self) -> OrderLine:
+        return OrderLine(product_id=self.product_id, quantity=self.quantity)
+
+
+class OrderItemResponse(BaseModel):
+    product_id: int
+    name: str
+    quantity: int
+    unit_price_net: Decimal
+    vat_rate: VatRate
+    net_total: Decimal
 
     @classmethod
     def from_domain(cls, item: OrderItem) -> Self:
         return cls(
+            product_id=item.product_id,
             name=item.name,
             quantity=item.quantity,
             unit_price_net=item.unit_price_net,
             vat_rate=item.vat_rate,
+            net_total=item.net_total,
         )
 
 
 class OrderCreateRequest(BaseModel):
     customer: CustomerPayload
-    items: list[OrderItemPayload] = Field(min_length=1)
+    items: list[OrderLinePayload] = Field(min_length=1)
     shipping_method: ShippingMethod
     discount_code: str | None = Field(default=None, examples=["WELCOME10"])
 
     def to_command(self) -> PlaceOrderCommand:
         return PlaceOrderCommand(
             customer=self.customer.to_domain(),
-            items=[item.to_domain() for item in self.items],
+            lines=[line.to_domain() for line in self.items],
             shipping_method=self.shipping_method,
             discount_code=self.discount_code,
         )
@@ -163,7 +168,7 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     created_at: datetime
     customer: CustomerPayload
-    items: list[OrderItemPayload]
+    items: list[OrderItemResponse]
     shipping_method: ShippingMethod
     discount_code: str | None
     tracking_number: str | None
@@ -177,7 +182,7 @@ class OrderResponse(BaseModel):
             status=order.status,
             created_at=order.created_at,
             customer=CustomerPayload.from_domain(order.customer),
-            items=[OrderItemPayload.from_domain(item) for item in order.items],
+            items=[OrderItemResponse.from_domain(item) for item in order.items],
             shipping_method=order.shipping_method,
             discount_code=order.discount_code,
             tracking_number=order.tracking_number,

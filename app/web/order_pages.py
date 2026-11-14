@@ -3,12 +3,12 @@ from collections.abc import Callable
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, Response
 
-from app.api.dependencies import InvoiceServiceDep, OrderServiceDep
+from app.api.dependencies import InvoiceServiceDep, OrderServiceDep, ProductServiceDep
 from app.domain.errors import DomainError, NotFoundError
 from app.domain.order import Order
 from app.domain.shipping import ShippingMethod
-from app.domain.vat import VatRate
 from app.services.order_service import OrderService
+from app.services.product_service import ProductService
 from app.web.formatting import shipping_price_gross
 from app.web.forms import ITEM_ROWS, parse_order_form
 from app.web.templating import redirect, render_not_found, templates
@@ -29,17 +29,19 @@ def order_list(request: Request, orders: OrderServiceDep) -> Response:
 
 
 @router.get("/orders/new", response_class=HTMLResponse)
-def new_order_form(request: Request) -> Response:
-    return _render_order_form(request, form={})
+def new_order_form(request: Request, products: ProductServiceDep) -> Response:
+    return _render_order_form(request, products, form={})
 
 
 @router.post("/orders", response_class=HTMLResponse)
-async def create_order(request: Request, orders: OrderServiceDep) -> Response:
+async def create_order(
+    request: Request, orders: OrderServiceDep, products: ProductServiceDep
+) -> Response:
     form = await request.form()
     try:
         order = orders.place_order(parse_order_form(form))
     except DomainError as error:
-        return _render_order_form(request, form=form, error=str(error), status_code=422)
+        return _render_order_form(request, products, form=form, error=str(error), status_code=422)
     return redirect(f"/orders/{order.id}")
 
 
@@ -81,13 +83,17 @@ def issue_invoice(order_id: int, invoices: InvoiceServiceDep) -> Response:
 
 
 def _render_order_form(
-    request: Request, form: object, error: str | None = None, status_code: int = 200
+    request: Request,
+    products: ProductService,
+    form: object,
+    error: str | None = None,
+    status_code: int = 200,
 ) -> Response:
     context = {
         "form": form,
         "error": error,
         "item_rows": range(ITEM_ROWS),
-        "vat_rates": list(VatRate),
+        "products": products.list_products(active_only=True),
         "shipping_options": [(method, shipping_price_gross(method)) for method in ShippingMethod],
     }
     return templates.TemplateResponse(request, "order_form.html", context, status_code=status_code)
