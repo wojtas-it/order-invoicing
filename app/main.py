@@ -9,6 +9,7 @@ from app.config import Settings
 from app.infrastructure.carrier import build_carrier_client
 from app.infrastructure.clock import SystemClock
 from app.infrastructure.database import create_session_factory
+from app.infrastructure.demo_data import seed_demo_products
 from app.services.ports import CarrierClient, Clock
 from app.web import invoice_pages, order_pages, product_pages
 
@@ -38,6 +39,8 @@ def create_app(
     app.state.session_factory = create_session_factory(settings.database_url)
     app.state.carrier = carrier or build_carrier_client(settings)
     app.state.clock = clock or SystemClock()
+    if settings.seed_demo_data:
+        seed_demo_products(app.state.session_factory)
 
     app.include_router(orders.router)
     app.include_router(products.router)
