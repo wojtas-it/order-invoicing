@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, Response
 
 from app.api.dependencies import InvoiceServiceDep, OrderServiceDep, ProductServiceDep
 from app.domain.errors import DomainError, NotFoundError
-from app.domain.order import Order
+from app.domain.order import Order, OrderStatus
 from app.domain.shipping import ShippingMethod
 from app.services.order_service import OrderService
 from app.services.product_service import ProductService
@@ -24,8 +24,11 @@ router = APIRouter(include_in_schema=False)
 
 
 @router.get("/", response_class=HTMLResponse)
-def order_list(request: Request, orders: OrderServiceDep) -> Response:
-    return templates.TemplateResponse(request, "orders.html", {"orders": orders.list_orders()})
+def order_list(
+    request: Request, orders: OrderServiceDep, status: OrderStatus | None = None
+) -> Response:
+    context = {"orders": orders.list_orders(status), "selected_status": status}
+    return templates.TemplateResponse(request, "orders.html", context)
 
 
 @router.get("/orders/new", response_class=HTMLResponse)

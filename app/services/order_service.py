@@ -64,8 +64,8 @@ class OrderService:
             raise OrderNotFoundError(order_id)
         return order
 
-    def list_orders(self) -> list[Order]:
-        return self._orders.list_all()
+    def list_orders(self, status: OrderStatus | None = None) -> list[Order]:
+        return self._orders.list_all(status)
 
     def pay(self, order_id: int) -> Order:
         return self._apply(order_id, Order.mark_paid)

@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.dependencies import InvoiceServiceDep, OrderServiceDep
 from app.api.responses import CARRIER_UNAVAILABLE, INVALID_DATA, NOT_FOUND, STATUS_CONFLICT
 from app.api.schemas import InvoiceResponse, OrderCreateRequest, OrderResponse
+from app.domain.order import OrderStatus
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -12,9 +13,9 @@ def create_order(payload: OrderCreateRequest, service: OrderServiceDep) -> Order
     return OrderResponse.from_domain(service.place_order(payload.to_command()))
 
 
-@router.get("", summary="Lista zamówień")
-def list_orders(service: OrderServiceDep) -> list[OrderResponse]:
-    return [OrderResponse.from_domain(order) for order in service.list_orders()]
+@router.get("", summary="Lista zamówień (opcjonalnie tylko w danym statusie)")
+def list_orders(service: OrderServiceDep, status: OrderStatus | None = None) -> list[OrderResponse]:
+    return [OrderResponse.from_domain(order) for order in service.list_orders(status)]
 
 
 @router.get("/{order_id}", summary="Szczegóły zamówienia", responses=NOT_FOUND)

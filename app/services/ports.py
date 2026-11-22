@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Protocol
 
 from app.domain.invoice import Invoice
-from app.domain.order import Order
+from app.domain.order import Order, OrderStatus
 from app.domain.product import Product
 from app.domain.shipping import ShippingMethod
 
@@ -23,7 +23,7 @@ class OrderRepository(Protocol):
 
     def get(self, order_id: int) -> Order | None: ...
 
-    def list_all(self) -> list[Order]: ...
+    def list_all(self, status: OrderStatus | None = None) -> list[Order]: ...
 
     def update(self, order: Order) -> None: ...
 

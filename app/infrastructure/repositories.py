@@ -70,9 +70,11 @@ class SqlOrderRepository:
         record = self._session.get(OrderRecord, order_id)
         return _order_to_domain(record) if record else None
 
-    def list_all(self) -> list[Order]:
-        records = self._session.scalars(select(OrderRecord).order_by(OrderRecord.id.desc()))
-        return [_order_to_domain(record) for record in records]
+    def list_all(self, status: OrderStatus | None = None) -> list[Order]:
+        query = select(OrderRecord).order_by(OrderRecord.id.desc())
+        if status is not None:
+            query = query.where(OrderRecord.status == status.value)
+        return [_order_to_domain(record) for record in self._session.scalars(query)]
 
     def update(self, order: Order) -> None:
         record = self._session.get(OrderRecord, order.id)

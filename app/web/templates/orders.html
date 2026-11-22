@@ -5,6 +5,13 @@
   <a class="button" href="/orders/new">Nowe zamówienie</a>
 </div>
 
+<nav class="filters" aria-label="Filtr statusu">
+  <a href="/" class="pill {% if not selected_status %}active{% endif %}">Wszystkie</a>
+  {% for status in OrderStatus %}
+  <a href="/?status={{ status.value }}" class="pill {% if selected_status == status %}active{% endif %}">{{ status.label }}</a>
+  {% endfor %}
+</nav>
+
 {% if orders %}
 <table>
   <thead>
@@ -23,6 +30,10 @@
   </tbody>
 </table>
 {% else %}
+{% if selected_status %}
+<p class="empty">Brak zamówień w statusie „{{ selected_status.label }}”.</p>
+{% else %}
 <p class="empty">Brak zamówień. <a href="/orders/new">Utwórz pierwsze zamówienie</a>.</p>
+{% endif %}
 {% endif %}
 {% endblock %}
