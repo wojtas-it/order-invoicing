@@ -28,12 +28,13 @@ class HttpCarrierClient:
                 headers={"Authorization": f"Bearer {self._api_key}"},
             )
             response.raise_for_status()
-            tracking_number = response.json().get("tracking_number")
+            body = response.json()
         except (httpx.HTTPError, ValueError) as error:
             raise CarrierUnavailableError(f"Błąd komunikacji z przewoźnikiem: {error}") from error
+        tracking_number = body.get("tracking_number") if isinstance(body, dict) else None
         if not tracking_number:
             raise CarrierUnavailableError("Przewoźnik nie zwrócił numeru przesyłki")
-        return tracking_number
+        return str(tracking_number)
 
 
 class FakeCarrierClient:

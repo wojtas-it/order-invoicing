@@ -7,6 +7,7 @@
     <button class="secondary no-print" onclick="window.print()">Drukuj</button>
   </div>
   <p>Data wystawienia: <strong>{{ invoice.issue_date.strftime("%d.%m.%Y") }}</strong>
+    · Data sprzedaży: <strong>{{ order.created_at.strftime("%d.%m.%Y") }}</strong>
     · Zamówienie <a href="/orders/{{ order.id }}">#{{ order.id }}</a></p>
 
   <section class="cards">
@@ -23,7 +24,7 @@
 
   <table>
     <thead>
-      <tr><th>Lp.</th><th>Nazwa</th><th class="num">Ilość</th><th class="num">Cena netto</th><th class="num">VAT</th><th class="num">Wartość netto</th></tr>
+      <tr><th>Lp.</th><th>Nazwa</th><th class="num">Ilość</th><th>J.m.</th><th class="num">Cena netto</th><th class="num">VAT</th><th class="num">Wartość netto</th></tr>
     </thead>
     <tbody>
       {% for item in order.items %}
@@ -31,6 +32,7 @@
         <td>{{ loop.index }}</td>
         <td>{{ item.name }}</td>
         <td class="num">{{ item.quantity }}</td>
+        <td>szt.</td>
         <td class="num">{{ item.unit_price_net | money }}</td>
         <td class="num">{{ item.vat_rate.value }}%</td>
         <td class="num">{{ item.net_total | money }}</td>
@@ -41,6 +43,7 @@
         <td>{{ order.items | length + 1 }}</td>
         <td>Dostawa ({{ order.shipping_method.label }})</td>
         <td class="num">1</td>
+        <td>usł.</td>
         <td class="num">{{ order.totals.shipping_net | money }}</td>
         <td class="num">23%</td>
         <td class="num">{{ order.totals.shipping_net | money }}</td>
